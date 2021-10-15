@@ -20,18 +20,30 @@ void test(const testcase& tc) {
     }
 }
 
-int main() {
+int main(int argc, char** argv) {
     std::cout << LINK << std::endl;
+
+    if (argc > 1) {
+        std::cout << longestPlndrm(argv[1]) << std::endl;
+        return 0;
+    }
+    
+    test({.input = "",                  .expected = ""});
     test({.input = "aaaaa",             .expected = "aaaaa"});
     test({.input = "a",                 .expected = "a"});
+    test({.input = "aa",                .expected = "aa"});
+    test({.input = "aba",               .expected = "aba"});
+    test({.input = "aaa",               .expected = "aaa"});
     test({.input = "abcdef",            .expected = "a"});
-    test({.input = "",                  .expected = ""});
     test({.input = "abcddd",            .expected = "ddd"});
+    test({.input = "saaaas",            .expected = "saaaas"});
     test({.input = "aabbbcccccbbdd",    .expected = "bbcccccbb"});
     test({.input = "abcdcbavvabcdcba",  .expected = "abcdcbavvabcdcba"});
     test({.input = "abcdcbavvabcdcb",   .expected = "bcdcbavvabcdcb"});
     test({.input = "abcdcbavabcdcb",    .expected = "bcdcbavabcdcb"});
-    test({.input = "abcdxcbavabcdcb",   .expected = "cbavabc"});  
+    test({.input = "abcdxcbavabcdcb",   .expected = "cbavabc"});
+
+    return 0;
 }
 
 std::string longestPlndrm(const std::string& input) {
@@ -47,30 +59,21 @@ std::string longestPlndrm(const std::string& input) {
     for (size_t i = 0; i < size; ++i) {
         if (size > i + 2 && input[i] == input[i + 2]) {
             palindromes.emplace_back(plndrm{.beg = i, .end = i + 2});
-        } else if (size > i + 1 && input[i] == input[i + 1]) {
+        }
+        if (size > i + 1 && input[i] == input[i + 1]) {
             palindromes.emplace_back(plndrm{.beg = i, .end = i + 1});
         }
     }
-   
-    if (palindromes.empty()) return input.substr(0, 1);
-   
+
+    plndrm maxP;
     for (auto& p : palindromes) {
-        while (true) {
-            if (p.beg == 0 || p.end == input.size() - 1) break;
-           
+        while (p.beg > 0 && p.end < input.size() - 1) {
             if (input[p.beg - 1] != input[p.end + 1]) break;
-           
             p.beg--;
             p.end++;
         }
-    }
-   
-    plndrm maxP;
-    for (const auto& p : palindromes) {
         if (maxP.end - maxP.beg < p.end - p.beg) maxP = p;
     }
-   
-    if (maxP.end == maxP.beg) return "";
    
     return input.substr(maxP.beg, maxP.end - maxP.beg + 1);
 }
