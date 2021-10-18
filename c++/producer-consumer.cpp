@@ -8,7 +8,7 @@
 
 #include <csignal>
 #include <iostream>
-#include <queue>
+#include <algorithm>
 #include <condition_variable>
 #include <sstream>
 #include <thread>
@@ -88,24 +88,26 @@ public:
         return p;
     }
 
-    bool operator<(const Task& task) {
+    bool operator<(const Task& task) const {
         return priority < task.priority;
     }
 
     void exec() const
     {
-        log() << "Task " << id << ' ' << "started";
+        constexpr size_t w = 6;
+        log() << "Task " << id << '\t' << "started";
         if (complexity > 0) {
             std::this_thread::sleep_for(std::chrono::seconds(complexity));
         }
-        log() << "Task " << id << ' ' << "completed";
+        log() << "Task " << id << '\t' << "completed";
     }
 }; // struct Task
 
 class Pool
 {
+    using TaskPtr = std::unique_ptr<Task>;
     std::vector<std::thread> threads;
-    std::queue<Task> taskQ;
+    std::vector<TaskPtr> taskQ;
     std::condition_variable productionCv;
     std::condition_variable consumptionCv;
     std::mutex productionMtx;
@@ -113,40 +115,51 @@ class Pool
     std::atomic<bool>& stopped;
     std::unique_ptr<Task> taskPtr;
 
+    std::unique_ptr<Task> popMax()
+    {
+        auto max = taskQ.begin();
+        for (auto it = taskQ.begin(), end = taskQ.end(); it != end; ++it) {
+            if (*(*max) < *(*it)) max = it;
+        }
+        if (max == taskQ.end()) return nullptr;
+        auto ptr = std::move(*max);
+        taskQ.erase(max);
+        return ptr;
+    }
+
     void producerLoop(size_t tid)
     {
-        log() << "producerLoop " << tid << " started";
+        // log() << "producerLoop " << tid << " started";
         Id id {tid, 0};
         while (!stopped) {
             int32_t delay = std::rand() % 10 + 1;
             std::this_thread::sleep_for(std::chrono::seconds(delay));
             id.uid++;
             std::lock_guard<std::mutex> l(productionMtx);
-            taskQ.emplace(id);
+            taskQ.emplace_back(std::make_unique<Task>(id));
             productionCv.notify_one();
         }
-        log() << "producerLoop " << tid << " stopped";
+        // log() << "producerLoop " << tid << " stopped";
     }
 
     void processorLoop(size_t tid)
     {
-        log() << "processorLoop " << tid << " started";
+        // log() << "processorLoop " << tid << " started";
         while(!stopped) {
             std::unique_lock<std::mutex> consLock(consumptionMtx);
-            log() << "processorLoop: ul(consumptionMtx)";
+            // log() << "processorLoop: ul(consumptionMtx)";
             consumptionCv.wait(consLock, [this]() {
-                log() << "CHECK";
+                // log() << "CHECK";
                 return taskPtr || stopped;
             });
-            log() << "processorLoop: wait";
+            // log() << "processorLoop: wait";
             if (taskPtr) taskPtr->promise().set_value();
             if (stopped) break;
-            if (!taskPtr) continue;
             auto localTaskPtr = std::move(taskPtr);
             consLock.unlock();
             localTaskPtr->exec();
         }
-        log() << "processorLoop " << tid << " stopped";
+        // log() << "processorLoop " << tid << " stopped";
     }
     
     void wakeUpLoop()
@@ -195,14 +208,13 @@ public:
     void mainLoop()
     {
         while(!stopped) {
-            log() << "mainLoop";
+            // log() << "mainLoop";
             std::unique_lock<std::mutex> prodLock(productionMtx);
             productionCv.wait(prodLock, [this](){
                 return !taskQ.empty() || stopped;
             });
             if (stopped) break;
-            auto localTaskPtr = std::make_unique<Task>(std::move(taskQ.front()));
-            taskQ.pop();
+            auto localTaskPtr = popMax();
             prodLock.unlock();
 
             auto future = localTaskPtr->promise().get_future();
@@ -210,12 +222,12 @@ public:
             std::unique_lock<std::mutex> consLk(consumptionMtx);
             taskPtr = std::move(localTaskPtr);
             consumptionCv.notify_one();
-            log() << "mainLoop: consumptionCv.notify_one()";
+            // log() << "mainLoop: consumptionCv.notify_one()";
             consLk.unlock();
             future.get();
-            log() << "mainLoop: consumptionCv.notify_one()";
+            // log() << "mainLoop: consumptionCv.notify_one()";
         }
-        log() << "mainLoop interrupted";
+        // log() << "mainLoop interrupted";
     }
 }; // class ProducerPool
 
