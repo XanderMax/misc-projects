@@ -2,3 +2,5 @@
 **/.program
 **/.prog
 **/.build
+**/gmon.out
+**/.log

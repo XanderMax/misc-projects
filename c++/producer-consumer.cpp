@@ -1,9 +1,11 @@
 #ifndef PRODUCERS
 #   define PRODUCERS 10
 #endif
-
 #ifndef CONSUMERS
 #   define CONSUMERS 5
+#endif
+#ifndef INTERRUPT_AFTER
+#   define INTERRUPT_AFTER 0
 #endif
 
 #include <csignal>
@@ -16,13 +18,17 @@
 #include <mutex>
 #include <vector>
 #include <future>
-
-static const size_t PRODUCER_THREADS = PRODUCERS;
-static const size_t CONSUMER_THREADS = CONSUMERS;
+#include <chrono>
+#include <iomanip>
 
 namespace
 {
+const size_t FORCED_INT_TIMEOUT  = INTERRUPT_AFTER;
+const size_t PRODUCER_THREADS    = PRODUCERS;
+const size_t CONSUMER_THREADS    = CONSUMERS;
+
 std::atomic<bool> interrupted;
+const auto start = std::chrono::system_clock::now();
 std::mutex _log_mtx;
 } // namespace
 
@@ -40,13 +46,15 @@ public:
 
     ~log()
     {
+        auto now = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = now-start;
         std::lock_guard<std::mutex> l(logMtx);
-        std::cout << str.str() << std::endl;
+        std::cout << std::setw(10) << elapsed_seconds.count() << ": " << str.str() << std::endl;
     }
 
     template <class T> log& operator<<(T&& t)
     {
-        str << t;
+        str << std::forward<T>(t);
         return *this;
     }
 }; // class log
@@ -107,7 +115,7 @@ class Pool
 {
     using TaskPtr = std::unique_ptr<Task>;
     std::vector<std::thread> threads;
-    std::vector<TaskPtr> taskQ;
+    std::vector<TaskPtr> tasks;
     std::condition_variable productionCv;
     std::condition_variable consumptionCv;
     std::mutex productionMtx;
@@ -117,55 +125,52 @@ class Pool
 
     std::unique_ptr<Task> popMax()
     {
-        auto max = taskQ.begin();
-        for (auto it = taskQ.begin(), end = taskQ.end(); it != end; ++it) {
+        auto max = tasks.begin();
+        for (auto it = tasks.begin(), end = tasks.end(); it != end; ++it) {
             if (*(*max) < *(*it)) max = it;
         }
-        if (max == taskQ.end()) return nullptr;
+        if (max == tasks.end()) return nullptr;
         auto ptr = std::move(*max);
-        taskQ.erase(max);
+        tasks.erase(max);
         return ptr;
     }
 
     void producerLoop(size_t tid)
     {
-        // log() << "producerLoop " << tid << " started";
         Id id {tid, 0};
         while (!stopped) {
             int32_t delay = std::rand() % 10 + 1;
             std::this_thread::sleep_for(std::chrono::seconds(delay));
             id.uid++;
             std::lock_guard<std::mutex> l(productionMtx);
-            taskQ.emplace_back(std::make_unique<Task>(id));
+            tasks.emplace_back(std::make_unique<Task>(id));
             productionCv.notify_one();
         }
-        // log() << "producerLoop " << tid << " stopped";
     }
 
     void processorLoop(size_t tid)
     {
-        // log() << "processorLoop " << tid << " started";
         while(!stopped) {
             std::unique_lock<std::mutex> consLock(consumptionMtx);
-            // log() << "processorLoop: ul(consumptionMtx)";
             consumptionCv.wait(consLock, [this]() {
-                // log() << "CHECK";
                 return taskPtr || stopped;
             });
-            // log() << "processorLoop: wait";
             if (taskPtr) taskPtr->promise().set_value();
             if (stopped) break;
             auto localTaskPtr = std::move(taskPtr);
             consLock.unlock();
             localTaskPtr->exec();
         }
-        // log() << "processorLoop " << tid << " stopped";
     }
     
     void wakeUpLoop()
     {
+        size_t i = FORCED_INT_TIMEOUT;
         while (!stopped) {
-            std::this_thread::sleep_for(std::chrono::microseconds(50));
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            if (FORCED_INT_TIMEOUT != 0) if (--i == 0) {
+                stopped = true;
+            }
         }
         log() << "INTERRUPTED";
         {
@@ -184,6 +189,8 @@ public:
     Pool(size_t prodNum, size_t consNum, std::atomic<bool>& stopped)
         : stopped(stopped)
     {
+        threads.emplace_back([this](){wakeUpLoop();});
+
         for (; prodNum != 0; --prodNum) {
             threads.emplace_back([this, prodNum](){producerLoop(prodNum);});
         }
@@ -191,8 +198,6 @@ public:
         for (; consNum != 0; --consNum) {
             threads.emplace_back([this, consNum](){processorLoop(consNum);});
         }
-
-        threads.emplace_back([this](){wakeUpLoop();});
     }
 
     Pool(Pool&) = delete;
@@ -208,10 +213,9 @@ public:
     void mainLoop()
     {
         while(!stopped) {
-            // log() << "mainLoop";
             std::unique_lock<std::mutex> prodLock(productionMtx);
             productionCv.wait(prodLock, [this](){
-                return !taskQ.empty() || stopped;
+                return !tasks.empty() || stopped;
             });
             if (stopped) break;
             auto localTaskPtr = popMax();
@@ -222,12 +226,9 @@ public:
             std::unique_lock<std::mutex> consLk(consumptionMtx);
             taskPtr = std::move(localTaskPtr);
             consumptionCv.notify_one();
-            // log() << "mainLoop: consumptionCv.notify_one()";
             consLk.unlock();
             future.get();
-            // log() << "mainLoop: consumptionCv.notify_one()";
         }
-        // log() << "mainLoop interrupted";
     }
 }; // class ProducerPool
 
