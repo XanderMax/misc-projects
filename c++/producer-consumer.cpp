@@ -85,33 +85,17 @@ public:
     void exec() const;
 }; // struct Task
 
-class PackagedTask
-{
-    Task task;
-    std::promise<void> p;
-public:
-    template <class T> PackagedTask(T&& task) : task(std::forward<T>(task)) {}
-
-    std::promise<void>& promise()
-    {
-        return p;
-    }
-
-    void exec()
-    {
-        task.exec();
-    }
-}; // class PackagedTask
-
 class Pool
 {
-    using TaskPtr = std::unique_ptr<PackagedTask>;
+    using TaskPtr = std::unique_ptr<Task>;
     std::vector<std::thread> threads;
     std::vector<Task> tasks;
     std::condition_variable productionCv;
     std::condition_variable consumptionCv;
+    std::condition_variable managerThreadCv;
     std::mutex productionMtx;
     std::mutex consumptionMtx;
+    std::mutex managerThreadMtx;
     std::atomic<bool>& stopped;
     TaskPtr currentTask;
 
@@ -240,13 +224,14 @@ void Pool::mainLoop()
         auto localTaskPtr = popMax();
         prodLock.unlock();
 
-        auto future = localTaskPtr->promise().get_future();
-
         std::unique_lock<std::mutex> consLk(consumptionMtx);
         currentTask = std::move(localTaskPtr);
         consumptionCv.notify_one();
         consLk.unlock();
-        future.get();
+        std::unique_lock<std::mutex> mgrLk(managerThreadMtx);
+        managerThreadCv.wait(mgrLk, [this]() {
+            return !currentTask || stopped;
+        });
     }
 }
 
@@ -254,7 +239,7 @@ Pool::TaskPtr Pool::popMax()
 {
     auto max = std::max_element(tasks.begin(), tasks.end());
     if (max == tasks.end()) return nullptr;
-    auto ptr = std::make_unique<PackagedTask>(std::move(*max));
+    auto ptr = std::make_unique<Task>(std::move(*max));
     tasks.erase(max);
     return ptr;
 }
@@ -274,15 +259,20 @@ void Pool::producerLoop(size_t tid)
 
 void Pool::processorLoop()
 {
-    while(!stopped) {
+    while (!stopped) {
+        TaskPtr localTaskPtr;
         std::unique_lock<std::mutex> consLock(consumptionMtx);
         consumptionCv.wait(consLock, [this]() {
             return currentTask || stopped;
         });
-        if (currentTask) currentTask->promise().set_value();
         if (stopped) break;
-        auto localTaskPtr = std::move(currentTask);
+        localTaskPtr = std::move(currentTask);
         consLock.unlock();
+
+        std::unique_lock<std::mutex> mgrLk(managerThreadMtx);
+        managerThreadCv.notify_one();
+        mgrLk.unlock();
+        
         localTaskPtr->exec();
     }
 }
@@ -303,8 +293,10 @@ void Pool::wakeUpLoop()
     }
     {
         std::lock_guard<std::mutex> l(consumptionMtx);
-        if (currentTask) currentTask->promise().set_value();
-        currentTask = nullptr;
         consumptionCv.notify_all();
+    }
+    {
+        std::lock_guard<std::mutex> l(managerThreadMtx);
+        managerThreadCv.notify_all();
     }
 }
