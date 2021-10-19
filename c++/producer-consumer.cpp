@@ -116,17 +116,52 @@ class Pool
     std::atomic<bool>& stopped;
     TaskPtr currentTask;
 
+    /**
+     * @brief searches for task with maximal priority currently in container
+     * wraps it into PackagedTask and removes element from container
+     * @return unique_ptr with PackagedTask
+     */
     TaskPtr popMax();
-    void producerLoop(size_t);
+
+    /**
+     * @brief launches loop in which task are created and put into container
+     * @param id of thread based on which id of task is compiled
+     * @return (void)
+     */
+    void producerLoop(size_t id);
+
+    /**
+     * @brief launches loop in which tasks supplied by mainLoop are processed
+     * @return (void)
+     */
     void processorLoop();
+
+    /**
+     * @brief waits for SIGINT, by checking 'stopped'
+     * wakes up all threads so that they could break loops.
+     * runs in separate thread
+     * @return (void)
+     */
     void wakeUpLoop();
 
 public:
+    /**
+     * @brief creates instance of Pool, creates producer and consumer threads
+     * @param prodNum number of producer threads
+     * @param consNum number of consumer threads
+     * @param stopped reference to atomic indicated that process has been interrupted
+     */
     Pool(size_t prodNum, size_t consNum, std::atomic<bool>& stopped);
     Pool(Pool&) = delete;
     Pool& operator=(Pool&) = delete;
     ~Pool();
 
+
+    /**
+     * @brief takes max priority task from container and dispatches it
+     * to one of consumer threads
+     * @return (void)
+     */
     void mainLoop();
 }; // class ProducerPool
 
