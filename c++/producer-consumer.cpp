@@ -67,10 +67,9 @@ struct Id
 
 class Task
 {
-    const Id id;
-    const int32_t priority = 0;
-    const int32_t complexity = 0;
-    std::promise<void> p;
+    Id id;
+    int32_t priority = 0;
+    int32_t complexity = 0;
 public:
     Task (const Id& id)
         : id(id)
@@ -79,22 +78,10 @@ public:
     {
     }
 
-    Task(Task&) = delete;
+    Task(const Task&) = default;
+    Task(Task&&) = default;
 
-    Task(Task&& other)
-        : id(other.id)
-        , priority(other.priority)
-        , complexity(other.complexity)
-        , p(std::move(other.p))
-    {
-    }
-
-    Task& operator=(Task&) = delete;
-
-    std::promise<void>& promise()
-    {
-        return p;
-    }
+    Task& operator=(const Task&) = default;
 
     bool operator<(const Task& task) const {
         return priority < task.priority;
@@ -111,26 +98,41 @@ public:
     }
 }; // struct Task
 
+class PackagedTask
+{
+    Task task;
+    std::promise<void> p;
+public:
+    template <class T> PackagedTask(T&& task) : task(std::forward<T>(task)) {}
+
+    std::promise<void>& promise()
+    {
+        return p;
+    }
+
+    void exec()
+    {
+        task.exec();
+    }
+}; // class PackagedTask
+
 class Pool
 {
-    using TaskPtr = std::unique_ptr<Task>;
+    using TaskPtr = std::unique_ptr<PackagedTask>;
     std::vector<std::thread> threads;
-    std::vector<TaskPtr> tasks;
+    std::vector<Task> tasks;
     std::condition_variable productionCv;
     std::condition_variable consumptionCv;
     std::mutex productionMtx;
     std::mutex consumptionMtx;
     std::atomic<bool>& stopped;
-    std::unique_ptr<Task> taskPtr;
+    TaskPtr currentTask;
 
-    std::unique_ptr<Task> popMax()
+    TaskPtr popMax()
     {
-        auto max = tasks.begin();
-        for (auto it = tasks.begin(), end = tasks.end(); it != end; ++it) {
-            if (*(*max) < *(*it)) max = it;
-        }
+        auto max = std::max_element(tasks.begin(), tasks.end());
         if (max == tasks.end()) return nullptr;
-        auto ptr = std::move(*max);
+        auto ptr = std::make_unique<PackagedTask>(std::move(*max));
         tasks.erase(max);
         return ptr;
     }
@@ -143,21 +145,21 @@ class Pool
             std::this_thread::sleep_for(std::chrono::seconds(delay));
             id.uid++;
             std::lock_guard<std::mutex> l(productionMtx);
-            tasks.emplace_back(std::make_unique<Task>(id));
+            tasks.emplace_back(id);
             productionCv.notify_one();
         }
     }
 
-    void processorLoop(size_t tid)
+    void processorLoop()
     {
         while(!stopped) {
             std::unique_lock<std::mutex> consLock(consumptionMtx);
             consumptionCv.wait(consLock, [this]() {
-                return taskPtr || stopped;
+                return currentTask || stopped;
             });
-            if (taskPtr) taskPtr->promise().set_value();
+            if (currentTask) currentTask->promise().set_value();
             if (stopped) break;
-            auto localTaskPtr = std::move(taskPtr);
+            auto localTaskPtr = std::move(currentTask);
             consLock.unlock();
             localTaskPtr->exec();
         }
@@ -179,8 +181,8 @@ class Pool
         }
         {
             std::lock_guard<std::mutex> l(consumptionMtx);
-            if (taskPtr) taskPtr->promise().set_value();
-            taskPtr = nullptr;
+            if (currentTask) currentTask->promise().set_value();
+            currentTask = nullptr;
             consumptionCv.notify_all();
         }
     }
@@ -196,7 +198,7 @@ public:
         }
 
         for (; consNum != 0; --consNum) {
-            threads.emplace_back([this, consNum](){processorLoop(consNum);});
+            threads.emplace_back([this](){processorLoop();});
         }
     }
 
@@ -224,7 +226,7 @@ public:
             auto future = localTaskPtr->promise().get_future();
 
             std::unique_lock<std::mutex> consLk(consumptionMtx);
-            taskPtr = std::move(localTaskPtr);
+            currentTask = std::move(localTaskPtr);
             consumptionCv.notify_one();
             consLk.unlock();
             future.get();
