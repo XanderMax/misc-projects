@@ -23,12 +23,13 @@
 
 namespace
 {
-const size_t FORCED_INT_TIMEOUT  = INTERRUPT_AFTER;
-const size_t PRODUCER_THREADS    = PRODUCERS;
-const size_t CONSUMER_THREADS    = CONSUMERS;
+constexpr size_t FORCED_INT_TIMEOUT  = INTERRUPT_AFTER;
+constexpr size_t PRODUCER_THREADS    = PRODUCERS;
+constexpr size_t CONSUMER_THREADS    = CONSUMERS;
+
+const auto start = std::chrono::system_clock::now();
 
 std::atomic<bool> interrupted;
-const auto start = std::chrono::system_clock::now();
 std::mutex _log_mtx;
 } // namespace
 
@@ -36,11 +37,9 @@ class log
 {
     std::stringstream str;
     std::mutex& logMtx;
-    
 public:
 
     log() : logMtx(_log_mtx) {}
-
     log(log&) = delete;
     log& operator=(log&) = delete;
 
@@ -137,13 +136,19 @@ class Pool
     void processorLoop();
 
     /**
-     * @brief waits for SIGINT, by checking 'stopped'
+     * @brief waits for SIGINT, by checking 'stopped',
      * wakes up all threads so that they could break loops.
      * runs in separate thread
      * @return (void)
      */
     void wakeUpLoop();
 
+    /**
+     * @brief takes max priority task from container and dispatches it
+     * to one of consumer threads
+     * @return (void)
+     */
+    void mainLoop();
 public:
     /**
      * @brief creates instance of Pool, creates producer and consumer threads
@@ -155,14 +160,6 @@ public:
     Pool(Pool&) = delete;
     Pool& operator=(Pool&) = delete;
     ~Pool();
-
-
-    /**
-     * @brief takes max priority task from container and dispatches it
-     * to one of consumer threads
-     * @return (void)
-     */
-    void mainLoop();
 }; // class ProducerPool
 
 std::ostream& operator<<(std::ostream& out, const Id& id)
@@ -182,10 +179,8 @@ int main()
     
     std::signal(SIGINT, signal_handler);
 
-    Pool pp(PRODUCER_THREADS, CONSUMER_THREADS, interrupted);
-
     try {
-        pp.mainLoop();
+        Pool pp(PRODUCER_THREADS, CONSUMER_THREADS, interrupted);
     } catch (const std::exception& e) {
         log() << "exception occurred: " << e.what();
         interrupted = true;
@@ -193,7 +188,6 @@ int main()
         log() << "something has been thrown";
         interrupted = true;
     }
-    
 }
 
 Task::Task(const Id& id)
@@ -224,6 +218,8 @@ Pool::Pool(size_t prodNum, size_t consNum, std::atomic<bool>& stopped)
     for (; consNum != 0; --consNum) {
         threads.emplace_back([this](){processorLoop();});
     }
+
+    mainLoop();
 }
 
 Pool::~Pool()
@@ -267,7 +263,7 @@ void Pool::producerLoop(size_t tid)
 {
     Id id {tid, 0};
     while (!stopped) {
-        int32_t delay = std::rand() % 10 + 1;
+        const int32_t delay = std::rand() % 10 + 1;
         std::this_thread::sleep_for(std::chrono::seconds(delay));
         id.uid++;
         std::lock_guard<std::mutex> l(productionMtx);
@@ -296,7 +292,7 @@ void Pool::wakeUpLoop()
     size_t i = FORCED_INT_TIMEOUT;
     while (!stopped) {
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        if (FORCED_INT_TIMEOUT != 0) if (--i == 0) {
+        if (FORCED_INT_TIMEOUT != 0) if (i-- == 0) {
             stopped = true;
         }
     }
