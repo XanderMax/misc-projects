@@ -287,16 +287,7 @@ void Pool::wakeUpLoop()
         }
     }
     log() << "INTERRUPTED";
-    {
-        std::lock_guard<std::mutex> l(productionMtx);
-        productionCv.notify_all();
-    }
-    {
-        std::lock_guard<std::mutex> l(consumptionMtx);
-        consumptionCv.notify_all();
-    }
-    {
-        std::lock_guard<std::mutex> l(managerThreadMtx);
-        managerThreadCv.notify_all();
-    }
+    productionCv.notify_all();
+    consumptionCv.notify_all();
+    managerThreadCv.notify_all();
 }
