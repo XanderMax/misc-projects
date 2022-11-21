@@ -1,0 +1,1 @@
+This project shows how to lookup files in directory recursively and how to add non-source files to IDE with CMake-generated project
