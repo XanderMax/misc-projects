@@ -2,7 +2,7 @@
 
 struct SomeStruct
 {
-    SomeStruct() {std::cout << "BYE" << std::endl;}
+    SomeStruct(const char* c) {std::cout << "BYE: " << c << std::endl;}
 };
 
-static SomeStruct someStruct;
+static SomeStruct someStruct("object.cpp");

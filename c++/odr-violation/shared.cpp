@@ -7,7 +7,7 @@ void f()
 
 struct SomeStruct
 {
-    SomeStruct() {std::cout << "HELLO" << std::endl;}
+    SomeStruct(const char* c) {std::cout << "HELLO:" << c << std::endl;}
 };
 
-static SomeStruct someStruct;
+static SomeStruct someStruct("shared.cpp");
