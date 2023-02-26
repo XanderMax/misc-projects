@@ -1,8 +1,0 @@
-()this=0x7fdc4c007a28 p=0x5631a0ef29e0
-()this=0x7ffd7ef587a0 p=0x5631a114c3a0
-(=)this=0x7fdc4c007a28 p=0x5631a0ef29e0 o=0x7ffd7ef587a0 o.p=0x5631a114c3a0
-~()this=0x7ffd7ef587a0 p=0x5631a114c3a0
-~()this=0x7fdc4c007a28 p=0x5631a0ef29e0
-~()this=0x5631a0ee9fe0 p=0x5631a0ef29e0
-corrupted double-linked list
-Aborted (core dumped)
