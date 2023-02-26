@@ -4,6 +4,10 @@ project(map-file-generation)
 
 MESSAGE(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
 
+if (WIN32) # https://stackoverflow.com/a/71592676/5405069
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif(WIN32)
+
 add_library(map_file_generation_lib0 SHARED mylib0.cpp)
 add_library(map_file_generation_lib1 SHARED mylib1.cpp)
 
