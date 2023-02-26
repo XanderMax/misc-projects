@@ -7,4 +7,8 @@ For this for each compiler distinct set of options is to be specified
 
 Note—if the linker is being invoked indirectly, via a compiler driver (e.g.  gcc) then all the linker command line options should be prefixed by  -Wl,  (or whatever is appropriate for the particular compiler driver) like this:
 
-       gcc -Wl,--startgroup foo.o bar.o -Wl,--endgroup
+    gcc -Wl,--startgroup foo.o bar.o -Wl,--endgroup
+
+### MSVC
+
+    /MAP:map-file-name
