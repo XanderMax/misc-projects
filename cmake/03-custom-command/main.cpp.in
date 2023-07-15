@@ -1,0 +1,6 @@
+#include <iostream>
+
+int main()
+{
+    std::cout << "Pi value in Py is '${VAR_DEFINED_IN_PY}'" << std::endl;
+}
