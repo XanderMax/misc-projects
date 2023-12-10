@@ -1,5 +1,6 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
+import argparse
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,7 +9,7 @@ import sys
 
 def main(pretrained_model_path):
     mnist = tf.keras.datasets.mnist
-    (x_train,y_train) , (x_test,y_test) = mnist.load_data()
+    (x_train,y_train), (x_test,y_test) = mnist.load_data()
 
     x_train = tf.keras.utils.normalize(x_train,axis=1)
     x_test = tf.keras.utils.normalize(x_test,axis=1)
@@ -36,5 +37,12 @@ def train_model(x_train, y_train, x_test, y_test):
 
     return model
 
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='Image Classifier')
+    parser.add_argument('--model', type=str, help='Path to the pretrained model')
+    args = parser.parse_args()
+    return args
+
 if __name__ == "__main__":
-    main(sys.argv[1])
+    args = parse_arguments()
+    main(pretrained_model_path=args.model)
