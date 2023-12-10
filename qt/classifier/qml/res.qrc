@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/qml/app">
+        <file>main.qml</file>
+        <file>DrawingArea.qml</file>
+    </qresource>
+</RCC>
