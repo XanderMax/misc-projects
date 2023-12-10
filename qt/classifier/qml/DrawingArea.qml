@@ -2,6 +2,14 @@ import QtQuick
 
 Item {
     
+    function save(filename) {
+        _canvas.save(filename)
+    }
+    function clear() {
+        _canvas.paths = []
+        _canvas.currentPath = []
+        _canvas.requestPaint()
+    }
     Rectangle {
         color: "white"
         border.color: "black"
@@ -42,6 +50,8 @@ Item {
         onPaint: {
             var ctx = getContext("2d")
             ctx.reset()
+            ctx.fillStyle = Qt.rgba(1, 1, 1, 1)
+            ctx.fillRect(0, 0, _canvas.width, _canvas.height);
             ctx.fillStyle = Qt.rgba(0, 0, 0, 1)
             ctx.lineWidth = 2
             for (const index in paths) {

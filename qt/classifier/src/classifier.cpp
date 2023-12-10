@@ -30,7 +30,7 @@ QString Classifier::classify(const QString &imagePath)
 
 QString Classifier::getPathForImage(const QString& digit)
 {
-    static const QString basePath = "C:\\Dmytro.Redko\\hoc\\trainset\\%1\\%2.png";
+    static const QString basePath = "C:\\Users\\Dmytro.Redko\\hoc\\trainset\\%1\\%2.png";
 
     return basePath.arg(digit, generateRandomString());
 }

@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Window
 import ua.mikade
+import QtQuick.Controls
+import QtQuick.Layouts
 import "."
 
 Window {
@@ -18,7 +20,36 @@ Window {
         height: parent.height
 
         DrawingArea {
-            anchors.fill: parent
+            id: _drawingArea
+            width: 300
+            height: 300
+            anchors.centerIn: parent
         }
+
+        Column {
+            anchors.left: _drawingArea.right
+            width: 100
+            height: parent.height
+            Button {
+                width: 100
+                height: 100
+                text: "Save"
+                onClicked: {
+                    const filename = Classifier.getPathForImage("1")
+                    console.log("Save to ", filename)
+                    _drawingArea.save(filename, Qt.size(28, 28))
+                    _drawingArea.clear()
+                }
+            }
+            Button {
+                width: 100
+                height: 100
+                text: "Clear"
+                onClicked: {
+                    _drawingArea.clear()
+                }
+            }
+        }
+
     }
 }
