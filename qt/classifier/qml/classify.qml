@@ -9,7 +9,7 @@ Window {
     visible: true
     width: 640
     height: 480
-    title: qsTr("Навчи Мене")
+    title: qsTr("Перевір Мене")
 
     Item {
         width: parent.width
@@ -30,6 +30,7 @@ Window {
 
         DigitSelector {
             id: _digitSelector
+            interactive: false
             anchors.left: _boundaries.right
             anchors.right: parent.right
             anchors.top: _buttons.bottom
@@ -42,19 +43,16 @@ Window {
             width: 100
             height: 200
             Button {
-                width: 100
+                width: 120
                 height: 100
-                text: "Зберегти"
+                text: "Шо Намальовано?"
                 onClicked: {
-                    if (!_digitSelector.digit) return
-                    const filename = Classifier.getPathForImage(_digitSelector.digit)
-                    console.log("Save to ", filename)
-                    _drawingArea.save(filename)
-                    _drawingArea.clear()
+                    _digitSelector.select(-1)
+                    _timer.start()
                 }
             }
             Button {
-                width: 100
+                width: 120
                 height: 100
                 text: "З Нуля"
                 onClicked: {
@@ -62,6 +60,18 @@ Window {
                     _digitSelector.select(-1)
                 }
             }
+        }
+    }
+
+    Timer {
+        id: _timer
+        interval: 50
+        onTriggered: {
+            const filename = Classifier.getPathForTest(_digitSelector.digit)
+            console.log("Save to ", filename)
+            _drawingArea.save(filename)
+            const value = Classifier.classify(filename)
+            _digitSelector.select(value)
         }
     }
 }

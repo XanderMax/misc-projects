@@ -3,7 +3,7 @@ import QtQuick
 Item {
     id: root
     function save(filename) {
-        _canvas.save(filename)
+        _canvas.save(filename, Qt.size(28, 28))
     }
     function clear() {
         _canvas.paths = []

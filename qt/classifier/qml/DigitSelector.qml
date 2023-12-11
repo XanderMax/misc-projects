@@ -8,9 +8,11 @@ Item {
 
     function select(index) {
         if (index < 0 || index >= _model.count) {
-            return
+            internal.selected = -1
         }
-        internal.selected = index
+        else {
+            internal.selected = index
+        }
     }
 
     Grid {
