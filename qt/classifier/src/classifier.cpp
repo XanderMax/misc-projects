@@ -2,6 +2,7 @@
 
 #include <QString>
 #include <QRandomGenerator>
+#include <QProcess>
 namespace
 {
 QString generateRandomString()
@@ -23,9 +24,16 @@ Classifier::Classifier(QObject *parent) : QObject(parent)
 {
 }
 
-QString Classifier::classify(const QString &imagePath)
+int Classifier::classify(const QString &imagePath)
 {
-    return "4";
+    static const QString modelPath = QStringLiteral("C:\\Users\\Dmytro.Redko\\hoc\\model.keras");
+    static const QString classifyScript = QStringLiteral("C:\\Users\\Dmytro.Redko\\dev\\projects\\misc-projects\\py\\classifier\\classify.py");
+    const QString outputFilePattern = QStringLiteral("C:\\Users\\Dmytro.Redko\\hoc\\output\\%1.txt");
+    const auto outputFile = outputFilePattern.arg(generateRandomString());
+    const QString program = "python.exe";
+    const QStringList arguments {classifyScript, "--model", modelPath, "--image", imagePath, "--output", outputFile};
+    QProcess::execute(program, arguments);
+    return 1;
 }
 
 QString Classifier::getPathForImage(const QString& digit)

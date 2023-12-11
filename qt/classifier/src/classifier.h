@@ -13,6 +13,6 @@ public:
     explicit Classifier(QObject *parent = nullptr);
 
 public slots:
-    QString classify(const QString &imagePath);
+    int classify(const QString &imagePath);
     QString getPathForImage(const QString& digit);
 };
