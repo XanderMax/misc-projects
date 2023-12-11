@@ -9,47 +9,48 @@ Window {
     visible: true
     width: 640
     height: 480
-    title: qsTr("Hello World")
-
-    Component.onCompleted: {
-        console.log("Hello from QML", Classifier.getPathForImage("1"))
-    }
+    title: qsTr("Тренувальна Вибірка")
 
     Item {
         width: parent.width
         height: parent.height
 
-        DrawingArea {
-            id: _drawingArea
-            width: 300
-            height: 300
-            anchors.centerIn: parent
+        Rectangle {
+            id: _boundaries
+            color: "black"
+            x: 2
+            width: Math.min(parent.width - 100, parent.height) - 10
+            height: Math.min(parent.width - 100, parent.height) - 10
+            DrawingArea {
+                id: _drawingArea
+                anchors.fill: parent
+                anchors.margins: 2
+            }
         }
 
         Column {
-            anchors.left: _drawingArea.right
+            anchors.left: _boundaries.right
             width: 100
             height: parent.height
             Button {
                 width: 100
                 height: 100
-                text: "Save"
+                text: "Зберегти"
                 onClicked: {
                     const filename = Classifier.getPathForImage("1")
                     console.log("Save to ", filename)
-                    _drawingArea.save(filename, Qt.size(28, 28))
+                    _drawingArea.save(filename)
                     _drawingArea.clear()
                 }
             }
             Button {
                 width: 100
                 height: 100
-                text: "Clear"
+                text: "Очистити"
                 onClicked: {
                     _drawingArea.clear()
                 }
             }
         }
-
     }
 }

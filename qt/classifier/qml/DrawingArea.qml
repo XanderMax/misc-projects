@@ -1,7 +1,7 @@
 import QtQuick
 
 Item {
-    
+    id: root
     function save(filename) {
         _canvas.save(filename)
     }
@@ -10,43 +10,34 @@ Item {
         _canvas.currentPath = []
         _canvas.requestPaint()
     }
-    Rectangle {
-        color: "white"
-        border.color: "black"
-        border.width: 1
-        width: 282
-        height: 282
-        anchors.centerIn: parent
 
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            onPositionChanged: (mouse) => {
-                if (pressed) {
-                    var xx = mouse.x / width
-                    var yy = mouse.y / height
-                    _canvas.currentPath.push(Qt.point(xx, yy))
-                    _canvas.requestPaint()
-                }
-            }
-            onReleased: {
-                console.log("Released")
-                _canvas.paths.push(_canvas.currentPath)
-                _canvas.currentPath = []
+    MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        onPositionChanged: (mouse) => {
+            if (pressed) {
+                var xx = mouse.x / width
+                var yy = mouse.y / height
+                _canvas.currentPath.push(Qt.point(xx, yy))
                 _canvas.requestPaint()
             }
+        }
+        onReleased: {
+            _canvas.paths.push(_canvas.currentPath)
+            _canvas.currentPath = []
+            _canvas.requestPaint()
         }
     }
 
     Canvas {
         id: _canvas
-        property var paths: [[Qt.point(0, 0), Qt.point(0.1, 0.1)]]
+        property var paths: []
         property var currentPath: []
         width: 28
         height: 28
         smooth: false
         anchors.centerIn: parent
-        scale: 10.0
+        scale: Math.floor(root.width / width)
         onPaint: {
             var ctx = getContext("2d")
             ctx.reset()

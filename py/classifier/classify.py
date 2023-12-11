@@ -15,6 +15,7 @@ def main(pretrained_model_path, image_file_path, output_file_path):
     predictions = model.predict(image)
     prediction = np.argmax(predictions[0])
     print(prediction)
+    print(predictions)
     with open(output_file_path, 'w') as f:
         f.write(str(prediction))
 
