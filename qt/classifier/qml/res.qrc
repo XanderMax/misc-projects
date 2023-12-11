@@ -2,5 +2,6 @@
     <qresource prefix="/qml/app">
         <file>main.qml</file>
         <file>DrawingArea.qml</file>
+        <file>DigitSelector.qml</file>
     </qresource>
 </RCC>

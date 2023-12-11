@@ -28,16 +28,26 @@ Window {
             }
         }
 
+        DigitSelector {
+            id: _digitSelector
+            anchors.left: _boundaries.right
+            anchors.right: parent.right
+            anchors.top: _buttons.bottom
+            height: 500
+        }
+
         Column {
+            id: _buttons
             anchors.left: _boundaries.right
             width: 100
-            height: parent.height
+            height: 200
             Button {
                 width: 100
                 height: 100
                 text: "Зберегти"
                 onClicked: {
-                    const filename = Classifier.getPathForImage("1")
+                    if (!_digitSelector.digit) return
+                    const filename = Classifier.getPathForImage(_digitSelector.digit)
                     console.log("Save to ", filename)
                     _drawingArea.save(filename)
                     _drawingArea.clear()
