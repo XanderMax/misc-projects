@@ -5,6 +5,7 @@
 #include <QProcess>
 #include <QFile>
 #include <QTextStream>
+#include <QDir>
 namespace
 {
 QString generateRandomString()
@@ -75,5 +76,21 @@ QString Classifier::getPathForTest()
 {
     static const QString basePath = "C:\\Users\\Dmytro.Redko\\hoc\\output\\%1.png";
     return basePath.arg(generateRandomString());
+}   
+    
+QStringList Classifier::filesInTestset()
+{
+    static const QString testSet = "C:\\Users\\Dmytro.Redko\\hoc\\testset\\imgs";
+
+    QDir directory(testSet);
+    QStringList fileNames = directory.entryList(QDir::Files | QDir::NoDotAndDotDot, QDir::Name);
+
+    QStringList filePaths;
+    for (const QString& fileName : fileNames) {
+        QString filePath = "file:///" + directory.absoluteFilePath(fileName);
+        filePaths.append(filePath);
+    }
+
+    return filePaths;
 }
 

@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/qml/app">
         <file>main.qml</file>
+        <file>test.qml</file>
         <file>classify.qml</file>
         <file>DrawingArea.qml</file>
         <file>DigitSelector.qml</file>

@@ -16,4 +16,5 @@ public slots:
     int classify(const QString &imagePath);
     QString getPathForImage(const QString& digit);
     QString getPathForTest();
+    QStringList filesInTestset();
 };
