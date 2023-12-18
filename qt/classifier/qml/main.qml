@@ -56,7 +56,7 @@ Window {
             Button {
                 width: 100
                 height: 100
-                text: "З Нуля"
+                text: "Cпочатку"
                 onClicked: {
                     _drawingArea.clear()
                     _digitSelector.select(-1)

@@ -45,7 +45,7 @@ Window {
             Button {
                 width: 120
                 height: 100
-                text: "Шо Намальовано?"
+                text: "Що Намальовано?"
                 onClicked: {
                     _digitSelector.select(-1)
                     _timer.start()
@@ -54,7 +54,7 @@ Window {
             Button {
                 width: 120
                 height: 100
-                text: "З Нуля"
+                text: "Cпочатку"
                 onClicked: {
                     _drawingArea.clear()
                     _digitSelector.select(-1)
