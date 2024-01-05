@@ -13,7 +13,7 @@ App {
 
         Rectangle {
             id: _window
-            color: "white"
+            color: "black"
             anchors.centerIn: parent
             width: internal.width
             height: internal.height
@@ -31,7 +31,7 @@ App {
             id: _rectComp
             Rectangle {
                 readonly property int line: 0
-                readonly property real accelation: 0.125
+                readonly property real accelation: 0.05
                 property real velocity: 0.0
                 readonly property real maxV: 10.0
                 x: 0
@@ -60,6 +60,9 @@ App {
                         killList.push(item)
                     }
                 }
+                for (var idx in killList) {
+                    killList[idx].destroy()
+                }
                 if (!rain) _water.height = Math.min(Math.max(_water.height - drainRate, 0), _window.height)
                 if (rain && ++counter >= rainRate) {
                     internal.addItem()
@@ -86,12 +89,13 @@ App {
             readonly property int defH: 1000
 
             function addItem() {
-                var line = Math.floor(Math.random() * 20)
+                var line = Math.floor(Math.random() * 25)
                 var isBlack = Math.floor(Math.random() * 2) == 0
                 var item = _rectComp.createObject(_window, {line: line,
                 color: isBlack ? "#0546f7" : "#4071f7"});
-                item.width = _window.width / 20
+                item.width = _window.width / 25
                 item.x = line * item.width
+                item.y = -500
             }
         }
     }
