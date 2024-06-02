@@ -11,9 +11,9 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="NewGameBtn" type="Button" parent="."]
-offset_left = 152.0
-offset_top = 576.0
-offset_right = 328.0
-offset_bottom = 632.0
+offset_left = 160.0
+offset_top = 624.0
+offset_right = 336.0
+offset_bottom = 680.0
 disabled = true
 text = "New Game"

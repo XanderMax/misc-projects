@@ -1,4 +1,4 @@
-class_name DisplayCell extends TextureRect
+class_name DisplayCell extends CenterContainer
 
 @export_group("Extra Properties")
 @export var State: String = ""

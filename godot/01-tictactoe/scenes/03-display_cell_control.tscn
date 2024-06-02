@@ -6,25 +6,26 @@
 [ext_resource type="Texture2D" uid="uid://cx7s4s1vuwjum" path="res://icon-o-idle.svg" id="3_wvrqa"]
 [ext_resource type="Texture2D" uid="uid://bo1axfxdxhb0n" path="res://display-glare.svg" id="4_t30jm"]
 
-[node name="DisplayCell" type="TextureRect"]
+[node name="DisplayCell" type="CenterContainer"]
 custom_minimum_size = Vector2(100, 100)
 offset_right = 124.0
 offset_bottom = 124.0
-texture = ExtResource("1_c2bxq")
 script = ExtResource("2_l5asv")
 
-[node name="X" type="Sprite2D" parent="."]
+[node name="Display" type="TextureRect" parent="."]
+layout_mode = 2
+texture = ExtResource("1_c2bxq")
+
+[node name="X" type="TextureRect" parent="."]
 visible = false
-position = Vector2(62, 62)
+layout_mode = 2
 texture = ExtResource("2_4ukti")
 
-[node name="O" type="Sprite2D" parent="."]
+[node name="O" type="TextureRect" parent="."]
 visible = false
-position = Vector2(62, 62)
+layout_mode = 2
 texture = ExtResource("3_wvrqa")
 
 [node name="Glare" type="TextureRect" parent="."]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 2
 texture = ExtResource("4_t30jm")
