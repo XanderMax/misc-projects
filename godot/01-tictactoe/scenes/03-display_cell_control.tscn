@@ -10,6 +10,7 @@
 custom_minimum_size = Vector2(100, 100)
 offset_right = 124.0
 offset_bottom = 124.0
+size_flags_horizontal = 3
 script = ExtResource("2_l5asv")
 
 [node name="Display" type="TextureRect" parent="."]
@@ -29,3 +30,6 @@ texture = ExtResource("3_wvrqa")
 [node name="Glare" type="TextureRect" parent="."]
 layout_mode = 2
 texture = ExtResource("4_t30jm")
+
+[node name="Frame" type="TextureRect" parent="."]
+layout_mode = 2

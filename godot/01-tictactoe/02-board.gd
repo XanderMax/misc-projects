@@ -14,7 +14,7 @@ var current_player: String = "X"
 
 func _ready():
 	for index in cell_indexes:
-		var cell = get_cell(index)
+		var cell = _get_cell(index)
 		print(index)
 		if cell:
 			cell.cell_pressed.connect(func(): _on_cell_pressed(index))
@@ -28,14 +28,15 @@ func clear_board():
 	x_moves.clear()
 	o_moves.clear()
 	current_player = "X"
-	dim_all_cells_except(cell_indexes)
+	_dim_all_cells_except(cell_indexes)
 	for index in cell_indexes:
-		set_state(index, "")
+		_set_state(index, "")
+	_update_cell_frames()
 
 func _on_cell_pressed(index: int):
 	if self.winner:
 		return
-	var cell = get_cell(index)
+	var cell = _get_cell(index)
 	if not cell:
 		return
 	
@@ -47,7 +48,7 @@ func _on_cell_pressed(index: int):
 		x_moves.append(index)
 		current_player = "O"
 		if x_moves.size() >= 4:
-			var first_move_cell = get_cell(x_moves.pop_front())
+			var first_move_cell = _get_cell(x_moves.pop_front())
 			if first_move_cell:
 				first_move_cell.State = ""
 				first_move_cell.Dimmed = false
@@ -55,30 +56,29 @@ func _on_cell_pressed(index: int):
 		o_moves.append(index)
 		current_player = "X"
 		if o_moves.size() >= 4:
-			var first_move_cell = get_cell(o_moves.pop_front())
+			var first_move_cell = _get_cell(o_moves.pop_front())
 			if first_move_cell:
 				first_move_cell.State = ""
 				first_move_cell.Dimmed = false
 		
 	if x_moves.size() >= 3:
-		var first_move_cell = get_cell(x_moves.front())
+		var first_move_cell = _get_cell(x_moves.front())
 		if first_move_cell:
 			first_move_cell.Dimmed = true
 	if o_moves.size() >= 3:
-		var first_move_cell = get_cell(o_moves.front())
+		var first_move_cell = _get_cell(o_moves.front())
 		if first_move_cell:
 			first_move_cell.Dimmed = true
 			
-	var win_condition = check_win_conditions()
-	if win_condition.is_empty():
-		return
-	
-	self.winner = get_state(win_condition.front())
-	print(win_condition)
-	print(get_winner())
-	dim_all_cells_except(win_condition)
+	var win_condition = _check_win_conditions()
+	if not win_condition.is_empty():
+		self.winner = _get_state(win_condition.front())
+		print(win_condition)
+		print(get_winner())
+		_dim_all_cells_except(win_condition)
+	_update_cell_frames()
 
-func get_cell(index: int) -> DisplayCell:
+func _get_cell(index: int) -> DisplayCell:
 	var node_name = "Cell%d" % index
 	var node = get_node(node_name) as DisplayCell
 	if not node:
@@ -93,19 +93,28 @@ func get_winner() -> String:
 func is_empty():
 	return self.x_moves.is_empty() && self.o_moves.is_empty()
 
-func dim_all_cells_except(win_condition: Array):
+func _dim_all_cells_except(win_condition: Array):
 	for index in cell_indexes:
-		var cell = get_cell(index)
+		var cell = _get_cell(index)
 		if not cell:
 			continue
 		cell.Dimmed = not win_condition.has(index)
-		
 
-func check_win_conditions() -> Array:
+func _update_cell_frames():
+	for index in cell_indexes:
+		var cell = _get_cell(index)
+		if not cell:
+			continue
+		if cell.State.is_empty() and self.winner.is_empty():
+			cell.set_frame(self.current_player)
+		else:
+			cell.set_frame("")
+
+func _check_win_conditions() -> Array:
 	for win_condition in win_conditions:
 		var state = ""
 		for index in win_condition:
-			var cell_state = get_state(index)
+			var cell_state = _get_state(index)
 			if not cell_state:
 				state = ""
 				break
@@ -118,14 +127,17 @@ func check_win_conditions() -> Array:
 		if state:
 			return win_condition
 	return []
+	
+func get_current_player() -> String:
+	return self.current_player 
 
-func get_state(index: int) -> String:
-	var cell = get_cell(index)
+func _get_state(index: int) -> String:
+	var cell = _get_cell(index)
 	if not cell:
 		return ""
 	return cell.State
 	
-func set_state(index: int, state: String):
-	var cell = get_cell(index)
+func _set_state(index: int, state: String):
+	var cell = _get_cell(index)
 	if cell:
 		cell.State = state

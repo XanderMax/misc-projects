@@ -13,6 +13,15 @@ func _gui_input(event):
 
 func on_click():
 	cell_pressed.emit()
+	
+func set_frame(frame: String):
+	if not frame:
+		$Frame.texture = null
+		return
+	if frame == "X":
+		$Frame.texture = load("res://green-frame.svg")
+	elif frame == "O":
+		$Frame.texture = load("res://red-frame.svg")
 
 func sync_state_with_ui():
 	$X.visible = false
