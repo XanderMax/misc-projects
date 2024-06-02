@@ -12,6 +12,7 @@ func _gui_input(event):
 		on_click()
 
 func on_click():
+	$ClickSoundFx.play()
 	cell_pressed.emit()
 	
 func set_frame(frame: String):

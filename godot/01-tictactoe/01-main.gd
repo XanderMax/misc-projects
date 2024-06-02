@@ -28,4 +28,6 @@ func _process(delta):
 	var new_current_winner = $Board.get_winner()
 	if new_current_winner != current_winner:
 		current_winner = new_current_winner
+		if current_winner:
+			$GameOverSoundFx.play()
 		sync_winner_palyer_with_ui()
