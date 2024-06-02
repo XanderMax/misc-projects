@@ -1,41 +1,19 @@
-[gd_scene load_steps=3 format=3 uid="uid://bl4od72juybrx"]
+[gd_scene load_steps=3 format=3 uid="uid://8rdwjui8l5bn"]
 
-[ext_resource type="Script" path="res://01-main.gd" id="1_iq0cc"]
-[ext_resource type="PackedScene" uid="uid://dqhcews8sg5ht" path="res://scenes/02-display_cell_control.tscn" id="1_pa0hm"]
+[ext_resource type="PackedScene" uid="uid://bl4od72juybrx" path="res://scenes/02-board.tscn" id="1_1sa4c"]
+[ext_resource type="Script" path="res://01-main.gd" id="1_pi4c3"]
 
 [node name="Main" type="Node2D"]
-position = Vector2(11, 122)
-script = ExtResource("1_iq0cc")
+script = ExtResource("1_pi4c3")
 
-[node name="GridContainer" type="GridContainer" parent="."]
-layout_direction = 2
-offset_right = 461.0
-offset_bottom = 380.0
-columns = 3
+[node name="Board" parent="." instance=ExtResource("1_1sa4c")]
+size_flags_horizontal = 3
+size_flags_vertical = 3
 
-[node name="Cell0" parent="GridContainer" instance=ExtResource("1_pa0hm")]
-layout_mode = 2
-
-[node name="Cell1" parent="GridContainer" instance=ExtResource("1_pa0hm")]
-layout_mode = 2
-
-[node name="Cell2" parent="GridContainer" instance=ExtResource("1_pa0hm")]
-layout_mode = 2
-
-[node name="Cell3" parent="GridContainer" instance=ExtResource("1_pa0hm")]
-layout_mode = 2
-
-[node name="Cell4" parent="GridContainer" instance=ExtResource("1_pa0hm")]
-layout_mode = 2
-
-[node name="Cell5" parent="GridContainer" instance=ExtResource("1_pa0hm")]
-layout_mode = 2
-
-[node name="Cell6" parent="GridContainer" instance=ExtResource("1_pa0hm")]
-layout_mode = 2
-
-[node name="Cell7" parent="GridContainer" instance=ExtResource("1_pa0hm")]
-layout_mode = 2
-
-[node name="Cell8" parent="GridContainer" instance=ExtResource("1_pa0hm")]
-layout_mode = 2
+[node name="NewGameBtn" type="Button" parent="."]
+offset_left = 152.0
+offset_top = 576.0
+offset_right = 328.0
+offset_bottom = 632.0
+disabled = true
+text = "New Game"
