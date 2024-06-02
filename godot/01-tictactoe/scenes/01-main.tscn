@@ -1,0 +1,41 @@
+[gd_scene load_steps=3 format=3 uid="uid://bl4od72juybrx"]
+
+[ext_resource type="Script" path="res://01-main.gd" id="1_iq0cc"]
+[ext_resource type="PackedScene" uid="uid://dqhcews8sg5ht" path="res://scenes/02-display_cell_control.tscn" id="1_pa0hm"]
+
+[node name="Main" type="Node2D"]
+position = Vector2(11, 122)
+script = ExtResource("1_iq0cc")
+
+[node name="GridContainer" type="GridContainer" parent="."]
+layout_direction = 2
+offset_right = 461.0
+offset_bottom = 380.0
+columns = 3
+
+[node name="Cell0" parent="GridContainer" instance=ExtResource("1_pa0hm")]
+layout_mode = 2
+
+[node name="Cell1" parent="GridContainer" instance=ExtResource("1_pa0hm")]
+layout_mode = 2
+
+[node name="Cell2" parent="GridContainer" instance=ExtResource("1_pa0hm")]
+layout_mode = 2
+
+[node name="Cell3" parent="GridContainer" instance=ExtResource("1_pa0hm")]
+layout_mode = 2
+
+[node name="Cell4" parent="GridContainer" instance=ExtResource("1_pa0hm")]
+layout_mode = 2
+
+[node name="Cell5" parent="GridContainer" instance=ExtResource("1_pa0hm")]
+layout_mode = 2
+
+[node name="Cell6" parent="GridContainer" instance=ExtResource("1_pa0hm")]
+layout_mode = 2
+
+[node name="Cell7" parent="GridContainer" instance=ExtResource("1_pa0hm")]
+layout_mode = 2
+
+[node name="Cell8" parent="GridContainer" instance=ExtResource("1_pa0hm")]
+layout_mode = 2

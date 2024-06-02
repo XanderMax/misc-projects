@@ -1,0 +1,30 @@
+[gd_scene load_steps=6 format=3 uid="uid://dqhcews8sg5ht"]
+
+[ext_resource type="Texture2D" uid="uid://b6unb72mhgqi4" path="res://display.svg" id="1_c2bxq"]
+[ext_resource type="Texture2D" uid="uid://d4ji0o5xdi22v" path="res://icon-x-idle.svg" id="2_4ukti"]
+[ext_resource type="Script" path="res://02-display_cell_control.gd" id="2_5px30"]
+[ext_resource type="Texture2D" uid="uid://cx7s4s1vuwjum" path="res://icon-o-idle.svg" id="3_wvrqa"]
+[ext_resource type="Texture2D" uid="uid://bo1axfxdxhb0n" path="res://display-glare.svg" id="4_t30jm"]
+
+[node name="DisplayCell" type="TextureRect"]
+custom_minimum_size = Vector2(100, 100)
+offset_right = 124.0
+offset_bottom = 124.0
+texture = ExtResource("1_c2bxq")
+script = ExtResource("2_5px30")
+
+[node name="X" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(62, 62)
+texture = ExtResource("2_4ukti")
+
+[node name="O" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(62, 62)
+texture = ExtResource("3_wvrqa")
+
+[node name="Glare" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("4_t30jm")
