@@ -27,6 +27,7 @@ def get_date_list(trips):
 
 
 def process_trips(trip_dates):
+    trip_dates.sort(key=lambda x: x["beg"])
     date_list = get_date_list(trip_dates)
     result = []
     for d in trip_dates:
@@ -61,6 +62,7 @@ def main(json_file):
         trips_json = json.load(file)
     trip_dates = parse_trips(trips_json)
     process_trips(trip_dates)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
