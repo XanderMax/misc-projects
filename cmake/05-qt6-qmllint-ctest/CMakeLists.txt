@@ -1,0 +1,17 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(qt6-qmllint-ctest)
+
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_program(QMLLINT_EXECUTABLE NAMES qmllint)
+
+message(STATUS "QT_DEFAULT_MAJOR_VERSION: ${QT_DEFAULT_MAJOR_VERSION}")
+message(STATUS "Qt6Core_VERSION: ${Qt6Core_VERSION}")
+message(STATUS "QMLLINT_EXECUTABLE: ${QMLLINT_EXECUTABLE}")
+
+enable_testing()
+
+add_test(NAME qmllintTest
+  COMMAND ${QMLLINT_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/main.qml
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
